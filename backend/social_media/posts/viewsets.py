@@ -19,9 +19,11 @@ class PostViewSet(GenericViewSet, CreateModelMixin, RetrieveModelMixin, ListMode
 
     def create(self, request, *args, **kwargs):
         user = request.user
-        title = request.data['title']
-        body = request.data['body']
-        post = create_post(user, title, body)
+        data = request.data
+        serializer = self.get_serializer(data=data)
+        if not serializer.is_valid():
+            return Response(status=HTTP_400_BAD_REQUEST)
+        post = create_post(user, **serializer.validated_data)
         serialized_data = PostListRetrieveSerializer(post).data
         return Response(status=HTTP_201_CREATED, data=serialized_data)
 
@@ -31,7 +33,6 @@ class PostViewSet(GenericViewSet, CreateModelMixin, RetrieveModelMixin, ListMode
             like_post(post_id=int(pk), user_id=request.user.id)
             return Response(status=HTTP_200_OK)
         except Exception as e:
-            print(e)
             return Response(status=HTTP_400_BAD_REQUEST, data={'detail': str(e)})
 
     @action(methods=['POST'], detail=True, url_path='dislike')
@@ -40,5 +41,4 @@ class PostViewSet(GenericViewSet, CreateModelMixin, RetrieveModelMixin, ListMode
             dislike_post(post_id=pk, user_id=request.user.id)
             return Response(status=HTTP_200_OK)
         except Exception as e:
-            print(e)
             return Response(status=HTTP_400_BAD_REQUEST, data={'detail': str(e)})
