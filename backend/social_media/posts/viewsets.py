@@ -1,5 +1,6 @@
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, ListModelMixin
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from rest_framework.viewsets import GenericViewSet
@@ -11,6 +12,7 @@ from posts.services.common import like_post, dislike_post, create_post
 
 class PostViewSet(GenericViewSet, CreateModelMixin, RetrieveModelMixin, ListModelMixin):
     queryset = Post.objects.all()
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -29,16 +31,10 @@ class PostViewSet(GenericViewSet, CreateModelMixin, RetrieveModelMixin, ListMode
 
     @action(methods=['POST'], detail=True, url_path='like')
     def like_post_req(self, request, pk=None):
-        try:
-            like_post(post_id=int(pk), user_id=request.user.id)
-            return Response(status=HTTP_200_OK)
-        except Exception as e:
-            return Response(status=HTTP_400_BAD_REQUEST, data={'detail': str(e)})
+        like_post(post_id=int(pk), user_id=request.user.id)
+        return Response(status=HTTP_200_OK)
 
     @action(methods=['POST'], detail=True, url_path='dislike')
     def dislike_post_req(self, request, pk=None):
-        try:
-            dislike_post(post_id=pk, user_id=request.user.id)
-            return Response(status=HTTP_200_OK)
-        except Exception as e:
-            return Response(status=HTTP_400_BAD_REQUEST, data={'detail': str(e)})
+        dislike_post(post_id=pk, user_id=request.user.id)
+        return Response(status=HTTP_200_OK)

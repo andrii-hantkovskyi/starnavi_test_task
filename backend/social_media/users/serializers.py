@@ -8,3 +8,9 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'likes')
+
+
+class UserCreateSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'password')

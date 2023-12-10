@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework.views import APIView
 
-from analytics.services.users import update_last_user_request
+from analytics.services.users import update_user_last_request
 
 
 class LogUserRequestMiddleware:
@@ -10,7 +10,7 @@ class LogUserRequestMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated:
-            update_last_user_request(request.user.id)
+            update_user_last_request(request.user.id)
             response = self.get_response(request)
             return response
 
@@ -19,12 +19,11 @@ class LogUserRequestMiddleware:
             response = self.get_response(request)
             return response
 
-        # Continue with your original logic for other URLs
         drf_request = APIView().initialize_request(request)
         user = drf_request.user
 
         if user.is_authenticated:
-            update_last_user_request(user.id)
+            update_user_last_request(user.id)
 
         response = self.get_response(request)
         return response
